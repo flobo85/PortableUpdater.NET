@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <ProjectGuid>{E2AA9B0C-B04E-4697-9E16-1ABC8C2ADC77}</ProjectGuid>
+    <OutputType>library</OutputType>
+    <TargetFrameworks>net47;net471;net472;net48</TargetFrameworks>
+    <RootNamespace>PortableUpdater.NET</RootNamespace>
+    <AssemblyTitle>PortableUpdater.NET</AssemblyTitle>
+    <Company>FloBo</Company>
+    <Product>PortableUpdater.NET</Product>
+    <Copyright>Copyright © 2020 FloBo</Copyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <PackageId>PortableUpdater.NET</PackageId>
+    <IncludeSymbols>true</IncludeSymbols>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Title>PortableUpdater.NET</Title>
+    <Authors>FloBo</Authors>
+    <Description>UpdateWithoutInstallation.NET is a class library that allows .NET developers to easily add update functionality without installing the project.</Description>
+    <PackageProjectUrl>https://github.com/flobo85/PortableUpdater.NET</PackageProjectUrl>
+    <PackageTags>portableupdate updater c# wpf winforms</PackageTags>
+    <PackageReleaseNotes>https://github.com/flobo85/PortableUpdater.NET/releases</PackageReleaseNotes>
+    <PackageOutputPath>build</PackageOutputPath>
+    <DocumentationFile>$(OutputPath)\$(Configuration)\UpdateWithoutInstallation.NET.xml</DocumentationFile>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageIcon></PackageIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>build\lib</OutputPath>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="build\lib" />
+  </ItemGroup>
+</Project>
