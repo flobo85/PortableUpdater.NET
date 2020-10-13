@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortableUpdater.NET", "PortableUpdater.NET\PortableUpdater.NET.csproj", "{467C685D-6D39-4AB3-A85C-626233C05CC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PortableUpdater.NET", "PortableUpdater.NET\PortableUpdater.NET.csproj", "{E2AA9B0C-B04E-4697-9E16-1ABC8C2ADC77}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortableUpdaterTest.WPF", "PortableUpdaterTest.WPF\PortableUpdaterTest.WPF.csproj", "{F4256410-4A1F-4FF3-A831-BEF54383DECB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{467C685D-6D39-4AB3-A85C-626233C05CC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{467C685D-6D39-4AB3-A85C-626233C05CC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{467C685D-6D39-4AB3-A85C-626233C05CC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{467C685D-6D39-4AB3-A85C-626233C05CC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2AA9B0C-B04E-4697-9E16-1ABC8C2ADC77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2AA9B0C-B04E-4697-9E16-1ABC8C2ADC77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2AA9B0C-B04E-4697-9E16-1ABC8C2ADC77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2AA9B0C-B04E-4697-9E16-1ABC8C2ADC77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4256410-4A1F-4FF3-A831-BEF54383DECB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4256410-4A1F-4FF3-A831-BEF54383DECB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4256410-4A1F-4FF3-A831-BEF54383DECB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4256410-4A1F-4FF3-A831-BEF54383DECB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
