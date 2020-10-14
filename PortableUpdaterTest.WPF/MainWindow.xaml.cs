@@ -12,14 +12,20 @@ namespace PortableUpdaterTest.WPF
         public MainWindow()
         {
             InitializeComponent();
-            Test();
-            
+            //TestHttp();
+            TestFile();
         }
 
-        private async void Test()
+        private void TestHttp()
         {
             var updatemanager = new PortableUpdater();
-            updatemanager.Start(@"https://raw.githubusercontent.com/flobo85/PortableUpdater.NET/main/Test.txt");
+            updatemanager.Start(@"https://raw.githubusercontent.com/flobo85/PortableUpdater.NET/main/Test.xml");
+        }
+
+        private void TestFile()
+        {
+            var updatemanager = new PortableUpdater();
+            updatemanager.Start(@"C:\Temp\Test.xml");
         }
     }
 }
