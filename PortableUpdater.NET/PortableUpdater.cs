@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Dynamic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -22,52 +22,74 @@ namespace PortableUpdaterDotNET
         /// Start checking for new version of application
         /// </summary>
         /// <param name="xmlLink"></param>URL or path of the xml file that contains information about latest version of the application.
-        public void Start(string xmlLink)
+        public async void Start(string xmlLink)
         {
             try
             {
                 XmlLink = new Uri(xmlLink);
-                if(XmlLink.Scheme.Equals(Uri.UriSchemeHttp) || XmlLink.Scheme.Equals(Uri.UriSchemeHttps))
-                {
-                    _ = CheckForUpdateAsync();
-                }
-                else if(XmlLink.Scheme.Equals(Uri.UriSchemeFile))
-                {
-                    UpdateInfoEventArgs args;
-                    string xml = File.ReadAllText(XmlLink.LocalPath, System.Text.Encoding.UTF8);
-                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(UpdateInfoEventArgs));
-                    XmlTextReader xmlTextReader = new XmlTextReader(new StringReader(xml)) { XmlResolver = null };
-                    args = (UpdateInfoEventArgs)xmlSerializer.Deserialize(xmlTextReader);
-                    Console.WriteLine($"*** CurrentVersion: {args.CurrentVersion} ***");
-                    Console.WriteLine($"*** DownloadURL: {args.DownloadURL} ***");
-                }
+                string xmlString = await GetXmlString();
+                var args = CheckForUpdateAsync(xmlString);
+
+                Console.WriteLine($"*** CurrentVersion: {args.CurrentVersion} ***");
+                Console.WriteLine($"*** DownloadURL: {args.DownloadURL} ***");
             }
-            catch (ArgumentNullException)
+            catch (Exception exception)
             {
-                // TODO: Error keine gültige URI für XML-Datei
-            }
-            catch(UriFormatException)
-            {
-                // TODO: Error keine gültige URI für XML-Datei
+                ShowError(exception);
             }
         }
 
-        private async Task CheckForUpdateAsync()
+        private async Task<string> GetXmlString()
         {
-            HttpClient client = new HttpClient();
-            UpdateInfoEventArgs args;
-            using (HttpResponseMessage response = await client.GetAsync(XmlLink))
+            try
             {
-                using (HttpContent content = response.Content)
+                if (XmlLink.Scheme.Equals(Uri.UriSchemeHttp) || XmlLink.Scheme.Equals(Uri.UriSchemeHttps))
                 {
-                    string xml = await content.ReadAsStringAsync();
-                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(UpdateInfoEventArgs));
-                    XmlTextReader xmlTextReader = new XmlTextReader(new StringReader(xml)) { XmlResolver = null };
-                    args = (UpdateInfoEventArgs)xmlSerializer.Deserialize(xmlTextReader);                    
+                    HttpClient client = new HttpClient();
+                    using (HttpResponseMessage response = await client.GetAsync(XmlLink))
+                    {
+                        using (HttpContent content = response.Content)
+                        {
+                            return await content.ReadAsStringAsync();
+                        }
+                    }
+                }
+
+                else if (XmlLink.Scheme.Equals(Uri.UriSchemeFile))
+                {
+                    return File.ReadAllText(XmlLink.LocalPath, System.Text.Encoding.UTF8);
+                }
+
+                else if (XmlLink.Scheme.Equals(Uri.UriSchemeFtp))
+                {
+                    // TODO: get xml string via ftp
+                    return null;
+                }
+
+                else
+                {
+                    // TODO: throw Exception
+                    return null;
                 }
             }
-            Console.WriteLine($"*** CurrentVersion: {args.CurrentVersion} ***");
-            Console.WriteLine($"*** DownloadURL: {args.DownloadURL} ***");
+            catch(Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        private UpdateInfoEventArgs CheckForUpdateAsync(string xmlString)
+        {
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(UpdateInfoEventArgs));
+            XmlTextReader xmlTextReader = new XmlTextReader(new StringReader(xmlString)) { XmlResolver = null };
+            return (UpdateInfoEventArgs)xmlSerializer.Deserialize(xmlTextReader);            
+        }
+
+        private static void ShowError(Exception exception)
+        {
+            MessageBox.Show(exception.Message,
+                            exception.GetType().ToString(), MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
         }
     }
 }
