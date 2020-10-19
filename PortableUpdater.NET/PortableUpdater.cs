@@ -125,7 +125,7 @@ namespace PortableUpdaterDotNET
 
             else if (XmlLink.Scheme.Equals(Uri.UriSchemeFtp))
             {
-                // TODO: Download Update via ftp                
+                // TODO: Download Update via ftp    TEST            
             }
         }
 
