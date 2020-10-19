@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Navigation;
 using System.Xml.Serialization;
 
 namespace PortableUpdaterDotNET
@@ -9,7 +10,7 @@ namespace PortableUpdaterDotNET
     [XmlRoot("item")]
     public class UpdateInfoEventArgs : EventArgs
     {
-        private string _downloadURL;
+        private string _downloadURL; 
 
         /// <summary>
         ///     If new update is available then returns true otherwise false.
@@ -17,32 +18,41 @@ namespace PortableUpdaterDotNET
         public bool IsUpdateAvailable { get; set; }
 
         /// <summary>
+        ///     Returns version of the application currently installed on the user's PC.
+        /// </summary>
+        public Version InstalledVersion { get; set; }
+
+        /// <summary>
         ///     Download URL of the update file.
         /// </summary>
         [XmlElement("url")]
         public string DownloadURL
         {
-            get => GetURI(_downloadURL);
+            get => CheckStringToUri(_downloadURL);
             set => _downloadURL = value;
         }
-
+         
         /// <summary>
         ///     Returns newest version of the application available to download.
         /// </summary>
         [XmlElement("version")]
         public string CurrentVersion { get; set; }
 
-        internal static string GetURI(string url)
+        internal static string CheckStringToUri(string url)
         {
-            if (!string.IsNullOrEmpty(url) && Uri.IsWellFormedUriString(url, UriKind.Relative))
+            try
             {
                 Uri uri = new Uri(url);
+                if (!uri.IsAbsoluteUri)
+                {
+                    throw new Exception($"Der Download-URL darf kein relativer Pfad sein");
+                }
+                return uri.ToString();
             }
-            else
+            catch (Exception)
             {
-                // TODO: Error Message ausgeben, "Downloadstring kein gültiger Uri-Pfad "
+                throw;
             }
-            return url;
         }
     }
 }
