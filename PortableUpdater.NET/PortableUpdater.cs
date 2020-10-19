@@ -102,30 +102,36 @@ namespace PortableUpdaterDotNET
 
         private static async void DownloadFile(UpdateInfoEventArgs updateInfo)
         {
+            var downloadFileUrl = updateInfo.DownloadURL;
+            var destinationFilePath = Path.GetFullPath("update.zip");
+
             if (XmlLink.Scheme.Equals(Uri.UriSchemeHttp) || XmlLink.Scheme.Equals(Uri.UriSchemeHttps))
-            {
-                using (var httpClient = client)
+            {                
+                using (var client = new HttpClientDownloadWithProgress(downloadFileUrl, destinationFilePath))
                 {
-                    using (var request = new HttpRequestMessage(HttpMethod.Get, updateInfo.DownloadURL))
+                    client.ProgressChanged += (totalFileSize, totalBytesDownloaded, progressPercentage) => 
                     {
-                        using (
-                            Stream contentStream = await (await httpClient.SendAsync(request)).Content.ReadAsStreamAsync(),
-                            stream = new FileStream($"Testtest.xml", FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
-                        {
-                            await contentStream.CopyToAsync(stream);
-                        }
-                    }
+                        Console.WriteLine($"{progressPercentage}% ({totalBytesDownloaded}/{totalFileSize})");
+                    };
+
+                    await client.StartDownload();
                 }
             }
 
             else if (XmlLink.Scheme.Equals(Uri.UriSchemeFile))
             {
-                // TODO: Download Update via File
+                var client = new CopyFileWithProgress(downloadFileUrl, destinationFilePath);
+                client.FileCopyProgress += (totalFileSize, totalBytesDownloaded, progressPercentage) =>
+                {
+                    Console.WriteLine($"{progressPercentage}% ({totalBytesDownloaded}/{totalFileSize})");
+                };
+
+                client.StartDownload();                
             }
 
             else if (XmlLink.Scheme.Equals(Uri.UriSchemeFtp))
             {
-                // TODO: Download Update via ftp    TEST            
+                // TODO: Download Update via ftp            
             }
         }
 

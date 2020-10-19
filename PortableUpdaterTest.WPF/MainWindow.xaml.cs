@@ -12,8 +12,8 @@ namespace PortableUpdaterTest.WPF
         public MainWindow()
         {
             InitializeComponent();
-            TestHttp();
-            //TestFile();
+            //TestHttp();
+            TestFile();
         }
 
         private void TestHttp()
