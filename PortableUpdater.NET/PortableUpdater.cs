@@ -1,11 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Net.Http;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml;
-using System.Xml.Serialization;
 
 namespace PortableUpdaterDotNET
 {
@@ -19,7 +15,7 @@ namespace PortableUpdaterDotNET
         /// </summary>
         internal static Uri XmlLink;
 
-        internal static readonly HttpClient client = new HttpClient();
+        internal static IConnectionType connectionType;
 
         /// <summary>
         /// Prüft anhand der XML - Datei, ob eine neue Version verfügbar ist 
@@ -30,12 +26,23 @@ namespace PortableUpdaterDotNET
             try
             {
                 XmlLink = new Uri(xmlLink);
-                string xmlString = await GetXmlString();
-                var updateinfo = ReadXmlFileAsync(xmlString);
+                UpdateInfoEventArgs updateInfo = null;
+                if (XmlLink.Scheme.Equals(Uri.UriSchemeHttp) || XmlLink.Scheme.Equals(Uri.UriSchemeHttps))
+                {
+                    connectionType = new ConnectionTypeWeb();                    
+                }
+                else if (XmlLink.Scheme.Equals(Uri.UriSchemeFile))
+                {
+                    connectionType = new ConnectionTypeFile();
+                }
 
-                bool IsUpdateAvailable = CheckForUpdate(updateinfo);
-                DownloadFile(updateinfo);
-                Console.WriteLine($"***** {updateinfo.DownloadURL} *****");
+                updateInfo = await connectionType.ReadXmlFileAsync(XmlLink);
+
+                bool IsUpdateAvailable = CheckForUpdate(updateInfo);
+                connectionType.DownloadProgressChanged += DownloadUpdateProgressChanged;
+
+                await connectionType.StartDownloadAsync(updateInfo.DownloadURL, Path.GetFullPath("update.zip"));
+                Console.WriteLine($"***** {updateInfo.DownloadURL} *****");
             }
             catch (Exception exception)
             {
@@ -43,53 +50,9 @@ namespace PortableUpdaterDotNET
             }
         }
 
-        private static async Task<string> GetXmlString()
+        private static void DownloadUpdateProgressChanged(object sender, DownloadProgressEventArgs e)
         {
-            try
-            {
-                if (XmlLink.Scheme.Equals(Uri.UriSchemeHttp) || XmlLink.Scheme.Equals(Uri.UriSchemeHttps))
-                {
-                    client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { NoCache = true };
-                    HttpResponseMessage response = await client.GetAsync(XmlLink);
-                    response.EnsureSuccessStatusCode();
-                    return await response.Content.ReadAsStringAsync();
-                }
-
-                else if (XmlLink.Scheme.Equals(Uri.UriSchemeFile))
-                {
-                    return File.ReadAllText(XmlLink.LocalPath, System.Text.Encoding.UTF8);
-                }
-
-                else if (XmlLink.Scheme.Equals(Uri.UriSchemeFtp))
-                {
-                    // TODO: get xml string via ftp
-                    return null;
-                }
-
-                else
-                {
-                    // TODO: Protokoll nicht unterstützt
-                    return null;
-                }
-            }
-            catch (Exception exception)
-            {
-                throw exception;
-            }
-        }
-
-        private static UpdateInfoEventArgs ReadXmlFileAsync(string xmlString)
-        {
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof(UpdateInfoEventArgs));
-            XmlTextReader xmlTextReader = new XmlTextReader(new StringReader(xmlString)) { XmlResolver = null };
-            UpdateInfoEventArgs updateInfo = (UpdateInfoEventArgs)xmlSerializer.Deserialize(xmlTextReader);
-
-            if (string.IsNullOrEmpty(updateInfo.CurrentVersion) || string.IsNullOrEmpty(updateInfo.DownloadURL))
-            {
-                throw new MissingFieldException();
-            }
-
-            return updateInfo;
+            Console.WriteLine($"{e.ProgressPercentage}% ({e.TotalBytesDownloaded}/{e.TotalFileSize})");
         }
 
         private static bool CheckForUpdate(UpdateInfoEventArgs args)
@@ -98,46 +61,11 @@ namespace PortableUpdaterDotNET
             args.InstalledVersion = assembly.GetName().Version;
             args.IsUpdateAvailable = new Version(args.CurrentVersion) > args.InstalledVersion;
             return args.IsUpdateAvailable;
-        }
-
-        private static async void DownloadFile(UpdateInfoEventArgs updateInfo)
-        {
-            var downloadFileUrl = updateInfo.DownloadURL;
-            var destinationFilePath = Path.GetFullPath("update.zip");
-
-            if (XmlLink.Scheme.Equals(Uri.UriSchemeHttp) || XmlLink.Scheme.Equals(Uri.UriSchemeHttps))
-            {                
-                using (var client = new HttpClientDownloadWithProgress(downloadFileUrl, destinationFilePath))
-                {
-                    client.ProgressChanged += (totalFileSize, totalBytesDownloaded, progressPercentage) => 
-                    {
-                        Console.WriteLine($"{progressPercentage}% ({totalBytesDownloaded}/{totalFileSize})");
-                    };
-
-                    await client.StartDownload();
-                }
-            }
-
-            else if (XmlLink.Scheme.Equals(Uri.UriSchemeFile))
-            {
-                var client = new CopyFileWithProgress(downloadFileUrl, destinationFilePath);
-                client.FileCopyProgress += (totalFileSize, totalBytesDownloaded, progressPercentage) =>
-                {
-                    Console.WriteLine($"{progressPercentage}% ({totalBytesDownloaded}/{totalFileSize})");
-                };
-
-                client.StartDownload();                
-            }
-
-            else if (XmlLink.Scheme.Equals(Uri.UriSchemeFtp))
-            {
-                // TODO: Download Update via ftp            
-            }
-        }
+        }        
 
         internal static void ShowError(Exception exception)
         {
-            MessageBox.Show(exception.Message,
+            System.Windows.Forms.MessageBox.Show(exception.Message,
                             exception.GetType().ToString(), MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
         }
