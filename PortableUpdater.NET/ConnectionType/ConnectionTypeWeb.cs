@@ -105,7 +105,10 @@ namespace PortableUpdaterDotNET
             if (totalDownloadSize.HasValue)
                 progressPercentage = Math.Round((double)totalBytesRead / totalDownloadSize.Value * 100, 2);
 
-            var e = new DownloadProgressEventArgs() { TotalFileSize = totalDownloadSize, TotalBytesDownloaded = totalBytesRead, ProgressPercentage = progressPercentage };
+            var e = new DownloadProgressEventArgs()
+            { 
+                TotalFileSize = totalDownloadSize, TotalBytesDownloaded = totalBytesRead, ProgressPercentage = progressPercentage, Filename = _updateInfo.DownloadFileName
+            };
             OnDownloadProgressChanged(e);
 
             if (totalBytesRead == totalDownloadSize)

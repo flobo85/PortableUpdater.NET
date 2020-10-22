@@ -1,4 +1,5 @@
 ﻿using PortableUpdaterDotNET;
+using System;
 using System.Windows;
 
 
@@ -12,8 +13,14 @@ namespace PortableUpdaterTest.WPF
         public MainWindow()
         {
             InitializeComponent();
+            PortableUpdater.DownloadProgress += DownloadProgressEvent;
             //TestHttp();
             TestFile();
+        }
+
+        private void DownloadProgressEvent(object sender, DownloadProgressEventArgs e)
+        {
+            Console.WriteLine($"{e.Filename} wird heruntergeladen. {e.ProgressPercentage}% ({e.TotalBytesDownloaded}/{e.TotalFileSize})");
         }
 
         private void TestHttp()

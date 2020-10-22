@@ -17,6 +17,8 @@ namespace PortableUpdaterDotNET
 
         internal static IConnectionType connectionType;
 
+        public static event EventHandler<DownloadProgressEventArgs> DownloadProgress;
+
         /// <summary>
         /// Prüft anhand der XML - Datei, ob eine neue Version verfügbar ist 
         /// </summary>
@@ -37,11 +39,23 @@ namespace PortableUpdaterDotNET
                 }
 
                 updateInfo = await connectionType.ReadXmlFileAsync(XmlLink);
-
                 bool IsUpdateAvailable = CheckForUpdate(updateInfo);
+
+                // TODO: Wollen Sie das Update durchführen?
+
+                Uri downloadLink = new Uri(updateInfo.DownloadURL);
+                if (downloadLink.Scheme.Equals(Uri.UriSchemeHttp) || downloadLink.Scheme.Equals(Uri.UriSchemeHttps))
+                {
+                    connectionType = new ConnectionTypeWeb();
+                }
+                else if (downloadLink.Scheme.Equals(Uri.UriSchemeFile))
+                {
+                    connectionType = new ConnectionTypeFile();
+                }
+                
                 connectionType.DownloadProgressChanged += DownloadUpdateProgressChanged;
 
-                await connectionType.StartDownloadAsync(updateInfo.DownloadURL, Path.GetFullPath("update.zip"));
+                await connectionType.StartDownloadAsync(updateInfo.DownloadURL, Path.GetFullPath(updateInfo.DownloadFileName));
                 Console.WriteLine($"***** {updateInfo.DownloadURL} *****");
             }
             catch (Exception exception)
@@ -52,7 +66,7 @@ namespace PortableUpdaterDotNET
 
         private static void DownloadUpdateProgressChanged(object sender, DownloadProgressEventArgs e)
         {
-            Console.WriteLine($"{e.ProgressPercentage}% ({e.TotalBytesDownloaded}/{e.TotalFileSize})");
+            DownloadProgress?.Invoke(sender, e);            
         }
 
         private static bool CheckForUpdate(UpdateInfoEventArgs args)
